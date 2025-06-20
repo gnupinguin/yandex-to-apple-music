@@ -60,6 +60,20 @@ document.getElementById('exportApple').addEventListener('click', async () => {
   });
 });
 
+document.getElementById('exportAppleAuto').addEventListener('click', async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => {
+      if (typeof window.autoExportToApple === 'function') {
+        window.autoExportToApple();
+      } else {
+        console.warn('❌ autoExportToApple is not defined.');
+      }
+    }
+  });
+});
+
 document.getElementById('clearStorage').addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   chrome.scripting.executeScript({

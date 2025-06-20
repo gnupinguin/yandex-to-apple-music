@@ -79,7 +79,7 @@ async function searchAndPlay(song) {
   return true;
 }
 
-async function setupInteractionLoop(songs) {
+async function setupManualLoop(songs) {
   let index = 0;
   const notFoundSongs = [];
 
@@ -120,6 +120,30 @@ async function setupInteractionLoop(songs) {
   window.addEventListener('keydown', handleKeyDown);
 }
 
+async function setupAutoLoop(songs) {
+  const notFoundSongs = [];
+
+  for (const song of songs) {
+    const success = await searchAndPlay(song);
+    if (!success) {
+      notFoundSongs.push(song);
+      continue;
+    }
+
+    const favBtn = document.querySelector('button.favorite-button[aria-label="Favorite"]');
+    if (favBtn && !favBtn.classList.contains('favorited')) {
+      favBtn.click();
+      console.log('⭐ Song added to favorites.');
+    } else {
+      console.log('⚠️ Favorite button not found or already favorited.');
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  console.log('✅ Auto export completed. Not found:', notFoundSongs);
+}
+
 // Manually triggered by export button in popup (if on Apple Music page)
 window.exportToApple = async function () {
   const { yandexSongs = [] } = await chrome.storage.local.get(['yandexSongs']);
@@ -129,9 +153,20 @@ window.exportToApple = async function () {
     return;
   }
 
-  await setupInteractionLoop(yandexSongs);
+  await setupManualLoop(yandexSongs);
 };
 
+// Automatic export function
+window.autoExportToApple = async function () {
+  const { yandexSongs = [] } = await chrome.storage.local.get(['yandexSongs']);
+
+  if (!Array.isArray(yandexSongs) || yandexSongs.length === 0) {
+    console.log("❌ No Yandex songs to export.");
+    return;
+  }
+
+  await setupAutoLoop(yandexSongs);
+};
 
 // Clear storage function
 window.clearYandexSongs = async function () {

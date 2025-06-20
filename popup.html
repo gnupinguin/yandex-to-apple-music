@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Music Migrator</title>
+  <meta charset="UTF-8" />
+  <title>Music Transfer</title>
   <style>
-    body { font-family: sans-serif; padding: 10px; width: 200px; }
-    button { display: block; margin-bottom: 10px; width: 100%; }
+    body { font-family: sans-serif; min-width: 200px; padding: 10px; }
+    button { display: block; margin: 8px 0; width: 100%; }
   </style>
 </head>
 <body>
   <button id="importYandex">Import from Yandex</button>
   <button id="importFile">Import from File</button>
   <button id="exportFile">Export to File</button>
-  <button id="exportApple">Export to Apple</button>
+  <button id="exportApple">Export to Apple (Manual)</button>
+  <button id="exportAppleAuto">Export to Apple (Auto)</button>
   <button id="clearStorage">Clear Storage</button>
   <input type="file" id="fileInput" accept=".json" style="display: none;" />
   <script src="popup.js"></script>
