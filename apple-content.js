@@ -76,6 +76,23 @@ async function searchAndPlay(song) {
     return false;
   }
 
+  // Add key listener for ArrowUp to favorite the song
+  const keyHandler = async (e) => {
+    if (e.key === 'ArrowUp') {
+      console.log('⬆️ ArrowUp pressed. Trying to favorite the song...');
+      const favBtn = document.querySelector('button.favorite-button[aria-label="Favorite"]');
+      if (favBtn && !favBtn.classList.contains('favorited')) {
+        favBtn.click();
+        console.log('⭐ Song added to favorites.');
+      } else {
+        console.log('⚠️ Favorite button not found or already favorited.');
+      }
+      window.removeEventListener('keydown', keyHandler);
+    }
+  };
+
+  window.addEventListener('keydown', keyHandler);
+
   return true;
 }
 
