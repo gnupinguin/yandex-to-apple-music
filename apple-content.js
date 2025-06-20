@@ -76,24 +76,48 @@ async function searchAndPlay(song) {
     return false;
   }
 
-  // Add key listener for ArrowUp to favorite the song
-  const keyHandler = async (e) => {
-    if (e.key === 'ArrowUp') {
-      console.log('⬆️ ArrowUp pressed. Trying to favorite the song...');
-      const favBtn = document.querySelector('button.favorite-button[aria-label="Favorite"]');
-      if (favBtn && !favBtn.classList.contains('favorited')) {
-        favBtn.click();
-        console.log('⭐ Song added to favorites.');
-      } else {
-        console.log('⚠️ Favorite button not found or already favorited.');
-      }
-      window.removeEventListener('keydown', keyHandler);
-    }
-  };
-
-  window.addEventListener('keydown', keyHandler);
-
   return true;
+}
+
+async function setupInteractionLoop(songs) {
+  let index = 0;
+  const notFoundSongs = [];
+
+  async function processSong(song) {
+    const success = await searchAndPlay(song);
+    if (!success) {
+      notFoundSongs.push(song);
+    }
+  }
+
+  async function handleKeyDown(e) {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      window.removeEventListener('keydown', handleKeyDown);
+
+      if (e.key === 'ArrowUp') {
+        const favBtn = document.querySelector('button.favorite-button[aria-label="Favorite"]');
+        if (favBtn && !favBtn.classList.contains('favorited')) {
+          favBtn.click();
+          console.log('⭐ Song added to favorites.');
+        } else {
+          console.log('⚠️ Favorite button not found or already favorited.');
+        }
+      } else {
+        console.log('⏩ Skipped by ArrowDown.');
+      }
+
+      index++;
+      if (index < songs.length) {
+        await processSong(songs[index]);
+        window.addEventListener('keydown', handleKeyDown);
+      } else {
+        console.log('✅ All songs processed. Not found:', notFoundSongs);
+      }
+    }
+  }
+
+  await processSong(songs[index]);
+  window.addEventListener('keydown', handleKeyDown);
 }
 
 // Manually triggered by export button in popup (if on Apple Music page)
@@ -105,13 +129,5 @@ window.exportToApple = async function () {
     return;
   }
 
-  const firstSong = yandexSongs[0];
-  const notFoundSongs = [];
-  const success = await searchAndPlay(firstSong);
-
-  if (!success) {
-    notFoundSongs.push(firstSong);
-  }
-
-  console.log('✅ Export to Apple finished (up to playback). Not found (if any):', notFoundSongs);
+  await setupInteractionLoop(yandexSongs);
 };
