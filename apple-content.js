@@ -131,3 +131,10 @@ window.exportToApple = async function () {
 
   await setupInteractionLoop(yandexSongs);
 };
+
+
+// Clear storage function
+window.clearYandexSongs = async function () {
+  await chrome.storage.local.remove('yandexSongs');
+  console.log('🗑️ Yandex songs storage cleared.');
+};

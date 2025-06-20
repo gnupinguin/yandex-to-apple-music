@@ -1,13 +1,16 @@
-document.getElementById('import-yandex').addEventListener('click', async () => {
+document.getElementById('importYandex').addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['yandex-content.js'] });
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    function: () => console.log('✅ Yandex import is handled automatically on page load.')
+  });
 });
 
-document.getElementById('trigger-file-import').addEventListener('click', () => {
-  document.getElementById('import-file').click();
+document.getElementById('importFile').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
 });
 
-document.getElementById('import-file').addEventListener('change', async (event) => {
+document.getElementById('fileInput').addEventListener('change', async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
@@ -16,27 +19,57 @@ document.getElementById('import-file').addEventListener('change', async (event) 
     const songs = JSON.parse(text);
     if (Array.isArray(songs)) {
       await chrome.storage.local.set({ yandexSongs: songs });
-      alert('✅ Songs imported from file.');
+      alert(`✅ Imported ${songs.length} songs from file.`);
     } else {
-      alert('Invalid file format.');
+      alert("❌ Invalid file format.");
     }
-  } catch (e) {
-    alert('❌ Failed to parse file.');
+  } catch (err) {
+    alert("❌ Failed to read file.");
   }
 });
 
-document.getElementById('export-apple').addEventListener('click', async () => {
+document.getElementById('exportFile').addEventListener('click', async () => {
+  const { yandexSongs = [] } = await chrome.storage.local.get(['yandexSongs']);
+  if (!Array.isArray(yandexSongs) || yandexSongs.length === 0) {
+    alert("❌ No Yandex songs to export.");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(yandexSongs, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'yandex-songs.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('exportApple').addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  // Ensure script is injected first
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ['apple-content.js']
-  });
-
-  // Then call the export function
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    func: () => window.exportToApple?.()
+    func: () => {
+      if (typeof window.exportToApple === 'function') {
+        window.exportToApple();
+      } else {
+        console.warn('❌ exportToApple is not defined.');
+      }
+    }
+  });
+});
+
+document.getElementById('clearStorage').addEventListener('click', async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => {
+      if (typeof window.clearYandexSongs === 'function') {
+        window.clearYandexSongs();
+      } else {
+        console.warn('❌ clearYandexSongs is not defined.');
+      }
+    }
   });
 });
