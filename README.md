@@ -43,7 +43,7 @@ your-extension/
 ## 🧪 Usage
 
 1. **Open Yandex Music liked tracks page**
-   → Songs will automatically be saved to storage.
+   → Songs will automatically be saved to storage while you are scrolling down.
 
 2. **(Optional)** Import or export from JSON using popup buttons.
 
